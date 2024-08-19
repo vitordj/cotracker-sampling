@@ -21,7 +21,7 @@ def main(args):
         os.makedirs(output_folder, exist_ok=True)
 
     original_numpy = read_video_from_path(input_file_path)
-    original_video = torch.from_numpy(original_numpy).permute(0, 3, 1, 2)[None].float()[:, :500]
+    original_video = torch.from_numpy(original_numpy).permute(0, 3, 1, 2)[None].float()
     original_video = crop_video(original_video, top_percent=args.crop_top, bottom_percent=args.crop_bottom)
 
     len_video = original_video.shape[1]
