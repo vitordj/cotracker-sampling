@@ -26,3 +26,5 @@ RUN mkir checkpoints \
 COPY . .
 
 RUN pip install requiremets.txt
+
+ENTRYPOINT [ "bash" ]
