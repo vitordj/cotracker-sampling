@@ -64,7 +64,7 @@ def main(args):
             index = video.shape[1]
         next_frame += index
 
-        if args.save_videos:
+        if args.save_video:
             part_render = vis.visualize(video=video[:, :index], tracks=pred_tracks, visibility=pred_visibility, save_video=False)
             videos_list.append(part_render)
 
@@ -72,7 +72,7 @@ def main(args):
         for frame in frame_list:
             f.write(f"{frame},")
 
-    if args.save_videos:
+    if args.save_video:
         final_video = torch.cat(videos_list, dim=1)
         vis.save_video(video=final_video, filename='final_export')
 
