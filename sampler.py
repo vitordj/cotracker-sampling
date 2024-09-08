@@ -47,14 +47,14 @@ def crop_video(video, top_percent=20, bottom_percent=20):
 def main(args):
     workdir = args.workdir
     input_file_path = os.path.join(workdir, args.input_file)
+    input_file_name = os.path.splitext(os.path.basename(args.input_file))[0]
 
     if not args.output_folder:
-        date = dt.datetime.now().strftime("%Y_%m_%d_%H")
-        output_folder = f'{workdir}/cotracker_sampler_{date}'
-        os.makedirs(output_folder, exist_ok=True)
+        date = dt.datetime.now().strftime("%Y%m_%d%H")
+        output_folder = os.path.join(workdir, f'{input_file_name}__{date}')
     else:
         output_folder = os.path.join(workdir, args.output_folder)
-        os.makedirs(output_folder, exist_ok=True)
+    os.makedirs(output_folder, exist_ok=True)
 
     original_numpy = read_video_from_path(input_file_path)
     original_video = torch.from_numpy(original_numpy).permute(0, 3, 1, 2)[None].float()
@@ -93,9 +93,9 @@ def main(args):
             if args.save_frames:
                 saved_frame = original_numpy[next_frame]
                 saved_frame = cv2.cvtColor(saved_frame, cv2.COLOR_RGB2BGR)
-                frames_folder = f'{output_folder}/frames'
+                frames_folder = os.path.join(output_folder, f'frames_{input_file_name}')
                 os.makedirs(frames_folder, exist_ok=True)
-                cv2.imwrite(f'{frames_folder}/{str(next_frame).zfill(num_digitos)}.png', saved_frame)
+                cv2.imwrite(os.path.join(frames_folder, f"{str(next_frame).zfill(num_digitos)}.png"), saved_frame)
         except IndexError:
             index = video.shape[1]
         next_frame += index
@@ -104,21 +104,21 @@ def main(args):
             part_render = vis.visualize(video=video[:, :index], tracks=pred_tracks, visibility=pred_visibility, save_video=False)
             videos_list.append(part_render)
 
-    with open(f'{output_folder}/frames.txt', 'w') as f:
-        for frame in frame_list:
-            f.write(f"{frame},")
+    frames_txt_path = os.path.join(frames_folder, 'frames.txt')
+    with open(frames_txt_path, 'w') as f:
+        f.write(",".join(frame_list))
 
     if args.save_video:
         final_video = torch.cat(videos_list, dim=1)
-        vis.save_video(video=final_video, filename='final_export')
+        vis.save_video(video=final_video, filename=os.path.join(output_folder, f"{input_file_name}_cotracker.mp4"))
 
     print(f"Foram processados {len(frame_list)} frames: {', '.join(frame_list)}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="CoTracker Video Processing")
-    parser.add_argument('--workdir', type=str, required=True, help='Work directory')
+    parser.add_argument('--workdir', type=str, required=True, help='Work directory, where the input file is located')
     parser.add_argument('--input_file', type=str, required=True, help='Input file')
-    parser.add_argument('--output_folder', type=str, default=None, help='Output Foler (optional)')
+    parser.add_argument('--output_folder', type=str, default=None, help='Output Folder (optional)')
     parser.add_argument('--base_grid_size', type=int, default=4, help='Grid size height and width assuming that no mask is present.')
     parser.add_argument('--points_threshold', type=int, default=5, help='Percentage. When points limits are reached, a new frame is collected.')
     parser.add_argument('--frames_per_inf', type=int, default=150, help='Número de frames por inferência')
