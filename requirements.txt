@@ -1,2 +1,4 @@
 numpy
 opencv-python
+pandas>=2.0.0
+ffmpeg-python
