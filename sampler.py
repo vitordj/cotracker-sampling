@@ -110,7 +110,7 @@ def main(args):
 
     if args.save_video:
         final_video = torch.cat(videos_list, dim=1)
-        vis.save_video(video=final_video, filename=os.path.join(output_folder, f"{input_file_name}_cotracker.mp4"))
+        vis.save_video(video=final_video, filename=os.path.join(output_folder, f"{input_file_name}_cotracker"))
 
     print(f"Foram processados {len(frame_list)} frames: {', '.join(frame_list)}")
 
