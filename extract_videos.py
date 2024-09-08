@@ -15,30 +15,35 @@ def cut_resize_mp4(df: pd.DataFrame, input_folder: str, output_folder: str | Non
         output_folder (str | None): The folder to save the processed video files. If None, use current directory.
         resize_to (tuple[int, int] | None): The size to resize the video to. Defaults to (1080, 1920).
     """
-    # Get current date and time
     data_hora = datetime.now().strftime("%Y%m%d_%H%M")
     
     if output_folder is None:
         output_folder = f"video_cut_{data_hora}"
     else:
-        output_folder = os.path.join(output_folder, f"video_cut_{data_hora}")
+        output_folder = os.path.join(output_folder, f"video_cut__{data_hora}")
     os.makedirs(output_folder, exist_ok=True)
 
     for _, row in df.iterrows():
         if not os.path.exists(os.path.join(input_folder, row['arquivo_video'])):
             raise FileNotFoundError(f"File {row['arquivo_video']} not found in {input_folder}")
+    
+    df['qr_inicial'] = df['qr_inicial'].astype(int, errors='raise')
+    df['qr_final'] = df['qr_final'].astype(int, errors='raise')
+
+    qr_codes_len = len(str(df[['qr_inicial', 'qr_final']].max().max()))
 
     for _, row in df.iterrows():
-        row['qr_inicial'] = int(row['qr_inicial']) if not pd.isna(row['qr_inicial']) else ''
-        row['qr_final'] = int(row['qr_final']) if not pd.isna(row['qr_final']) else ''
-        output_file = f"{row['arquivo_video'].split('.')[0]}__{row['qr_inicial']}-{row['qr_final']}.mp4"
+        qr_codes_str = f"{row['qr_inicial']}-{row['qr_final']}"
+        name_video = row['arquivo_video'].split('.')[0]
+        output_file = f"{name_video}__{qr_codes_str.zfill(qr_codes_len)}.mp4"
+
         if output_folder:
-            output_file_path = os.path.join(output_folder, output_file).replace('\\', '/')
+            output_file_path = os.path.abspath(os.path.join(output_folder, output_file))
         else:
             output_file_path = output_file
 
         if input_folder:
-            input_file_path = os.path.join(input_folder, row['arquivo_video']).replace('\\', '/')
+            input_file_path = os.path.abspath(os.path.join(input_folder, row['arquivo_video']))
         else:
             input_file_path = row['arquivo_video']
         
@@ -100,7 +105,7 @@ def main(args):
     with open(args.file_sheets_json, 'r') as f:
         file_sheets = json.load(f)
     json_path = os.path.dirname(args.file_sheets_json)
-    file_sheets = {os.path.join(json_path, file): sheets for file, sheets in file_sheets.items()}
+    file_sheets = {os.path.join(json_path, file): sheets for file, sheets in file_sheets.items()} # convert to absolute paths
     print(file_sheets)
     df = process_excel_files(file_sheets)
 
@@ -108,7 +113,7 @@ def main(args):
         df = df.query(f"arquivo_video == '{args.video_file}'")
     
     new_folder = cut_resize_mp4(
-        df.iloc[:1],
+        df,
         input_folder=args.input_folder,
         output_folder=args.output_folder,
         resize_to=(args.resize_width, args.resize_height)
