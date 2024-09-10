@@ -1,10 +1,10 @@
-# Video Processing and Analysis Guide
+# Raw Video Cut/Resize and Frame Sampling Guide
 
 ## Introduction
 
 This guide provides instructions for two main tasks in video processing and analysis:
 
-1. Video Extraction: Cutting and resizing video files based on QR code timings.
+1. Video Extraction: Cutting and resizing video files based on QR code timings. These QR codes were used to identify the start and end of the segments to be processed and this repo assumes that these timings are already known.
 2. CoTracker Sampling: Analyzing video content using the CoTracker model to identify key frames.
 
 These tools are designed to help researchers and analysts process large amounts of video data efficiently, extracting relevant segments and identifying frames of interest for further analysis.

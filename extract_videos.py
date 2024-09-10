@@ -27,9 +27,6 @@ def cut_resize_mp4(df: pd.DataFrame, input_folder: str, output_folder: str | Non
         if not os.path.exists(os.path.join(input_folder, row['arquivo_video'])):
             raise FileNotFoundError(f"File {row['arquivo_video']} not found in {input_folder}")
     
-    df['qr_inicial'] = df['qr_inicial'].astype(int, errors='raise')
-    df['qr_final'] = df['qr_final'].astype(int, errors='raise')
-
     qr_codes_len = len(str(df[['qr_inicial', 'qr_final']].max().max()))
 
     for _, row in df.iterrows():
@@ -49,7 +46,7 @@ def cut_resize_mp4(df: pd.DataFrame, input_folder: str, output_folder: str | Non
         
         print(f"Processing {output_file_path}")
         print(input_file_path)
-        
+        print(df[['t_inicial', 't_final']])
         stream = ffmpeg.input(input_file_path, ss=row['t_inicial'], to=row['t_final'])
         stream = ffmpeg.output(stream, output_file_path, c='copy', y=None)  # Add 'y=None' to force overwrite
         ffmpeg.run(stream)
@@ -89,8 +86,8 @@ def process_excel_files(file_sheets: dict[str, list[str]]) -> pd.DataFrame:
     
     if data_frames:
         df = pd.concat(data_frames, ignore_index=True)
-        df['t_inicial'] = '00:' + df['t_inicial'].str.strip().astype(str).str[:5]
-        df['t_final'] = '00:' + df['t_final'].str.strip().astype(str).str[:5]
+        df['t_inicial'] = '00:' + df['t_inicial'].astype(str).str.strip().str[:5]
+        df['t_final'] = '00:' + df['t_final'].astype(str).str.strip().str[:5]
         df['qr_inicial'] = df['qr_inicial'].astype(int, errors='raise')
         df['qr_final'] = df['qr_final'].astype(int, errors='raise')
         
