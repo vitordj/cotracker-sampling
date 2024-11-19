@@ -25,13 +25,14 @@ def cut_resize_mp4(df: pd.DataFrame, input_folder: str, output_folder: str | Non
 
     for _, row in df.iterrows():
         if not os.path.exists(os.path.join(input_folder, row['arquivo_video'])):
+            print(f'The path is {os.path.join(input_folder, row["arquivo_video"])}')
             raise FileNotFoundError(f"File {row['arquivo_video']} not found in {input_folder}")
     
     qr_codes_len = len(str(df[['qr_inicial', 'qr_final']].max().max()))
 
     for _, row in df.iterrows():
         qr_codes_str = f"{str(row['qr_inicial']).zfill(qr_codes_len)}-{str(row['qr_final']).zfill(qr_codes_len)}"
-        name_video = row['arquivo_video'].split('.')[0]
+        name_video = f"{row['arquivo_video'].split('.')[0]}__{row['camera']}"
         output_file = f"{name_video}__{qr_codes_str}.mp4"
 
         if output_folder:
